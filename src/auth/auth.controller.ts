@@ -1,4 +1,3 @@
-
 import {
     Body,
     Controller,
@@ -17,6 +16,7 @@ import { Public } from './decorators/public';
   export class AuthController {
     constructor(private authService: AuthService) {}
   
+    @Public()
     @HttpCode(HttpStatus.OK)
     @Post('login')
     async signIn(@Body() signInDto: Record<string, any>) {
