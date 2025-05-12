@@ -1,4 +1,3 @@
-
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -16,7 +15,7 @@ export class AuthService {
     private userRepository: Repository<User>,
   ) {}
 
-  async signIn(username: string, pass: string): Promise<{ access_token: string }> {
+  async signIn(username: string, pass: string): Promise<{ access_token: string, user: any }> {
     const user = await this.userRepository.findOne({ where: { pseudo: username } });
     if (!user) {
       throw new UnauthorizedException("le user n'existe pas");
@@ -27,18 +26,31 @@ export class AuthService {
         throw new UnauthorizedException('password invalide');
     }
     
-    const payload = { pseudo: user.pseudo, id: user.id };
+    const payload = { 
+      pseudo: user.pseudo, 
+      id: user.id, 
+      bank: user.bank, 
+      victoryStats: user.victoryStats 
+    };
+    
+    const { password, ...userWithoutPassword } = user;
     return {
       access_token: await this.jwtService.signAsync(payload),
+      user: userWithoutPassword
     };
   }
 
   async verifyToken(token: string) {
     try {
         const payload = this.jwtService.verify(token);
+        const user = await this.userRepository.findOne({ where: { id: payload.id } });
+        if (user) {
+            const { password, ...userWithoutPassword } = user;
+            return { valid: true, user: userWithoutPassword };
+        }
         return { valid: true, user: payload };
     } catch (error) {
         return { valid: false, error: error.message };
     }
-}
+  }
 }
