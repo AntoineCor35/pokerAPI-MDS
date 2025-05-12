@@ -5,6 +5,14 @@ import { LoggerInterceptorInterceptor } from './logger-interceptor/logger-interc
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // Configuration CORS pour permettre les requêtes depuis le frontend
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN || '*', // En production, spécifiez l'origine exacte
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Poker API')
     .setDescription('API pour les tables de poker')
