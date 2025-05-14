@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./db.sqlite:/app/db.sqlite
+    restart: unless-stopped
+
+  # Si vous souhaitez migrer vers une base de données plus robuste comme PostgreSQL à l'avenir,
+  # vous pourrez facilement ajouter un service de base de données ici.
+  # Exemple commenté pour PostgreSQL :
+  #
+  # db:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_DB=poker
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+# volumes:
+#   postgres_data:

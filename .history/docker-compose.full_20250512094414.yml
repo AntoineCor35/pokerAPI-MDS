@@ -1,0 +1,87 @@
+version: '3.8'
+
+# Définition d'un réseau pour la communication entre services
+networks:
+  poker-network:
+    driver: bridge
+
+services:
+  # API (Backend)
+  api:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3001:3000'
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      - CORS_ORIGIN=http://localhost:3000,http://frontend:3000
+    networks:
+      - poker-network
+    container_name: poker-api-dev
+    restart: unless-stopped
+
+  # Frontend en développement
+  frontend:
+    build:
+      context: ./frontend # Chemin vers votre code frontend
+      dockerfile: ../frontend.Dockerfile
+      target: development
+    volumes:
+      - ./frontend:/app # Pour le hot-reload
+      - /app/node_modules
+    ports:
+      - '3000:3000'
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001 # URL de l'API pour le développement
+      - NODE_ENV=development
+    networks:
+      - poker-network
+    container_name: poker-frontend-dev
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  # API (Production)
+  api-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=production
+      - CORS_ORIGIN=http://localhost,http://frontend-prod:80
+    volumes:
+      - sqlite_data:/usr/src/app/sqlite_data
+    networks:
+      - poker-network
+    container_name: poker-api-prod
+    restart: unless-stopped
+    profiles: ['prod']
+
+  # Frontend en production
+  frontend-prod:
+    build:
+      context: ./frontend # Chemin vers votre code frontend
+      dockerfile: ../frontend.Dockerfile
+      target: production
+    ports:
+      - '80:80'
+    environment:
+      - API_URL=http://api-prod:3000 # URL de l'API en interne
+    networks:
+      - poker-network
+    container_name: poker-frontend-prod
+    restart: unless-stopped
+    depends_on:
+      - api-prod
+    profiles: ['prod']
+
+volumes:
+  sqlite_data:
+  # Pour persister les données SQLite

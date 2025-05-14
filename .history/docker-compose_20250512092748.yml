@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3000:3000'
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+
+  # Pour la production
+  api-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+    # Utilisez ce service pour le déploiement en production
+    volumes:
+      - sqlite_data:/usr/src/app/sqlite_data
+
+volumes:
+  sqlite_data:
+  # Pour persister les données SQLite
