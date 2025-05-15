@@ -1,0 +1,50 @@
+version: '3.8'
+
+# Définition d'un réseau pour la communication entre services
+networks:
+  poker-network:
+    driver: bridge
+
+services:
+  # API (Backend) en développement
+  api:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3001:3000'
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      # Configuration CORS pour accepter les requêtes du frontend séparé
+      - CORS_ORIGIN=http://localhost:3000
+    networks:
+      - poker-network
+    container_name: poker-api-dev
+    restart: unless-stopped
+
+  # API (Backend) en production
+  api-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=production
+      # Configuration CORS pour accepter les requêtes du frontend séparé
+      - CORS_ORIGIN=http://localhost,http://localhost:3000
+    volumes:
+      - sqlite_data:/usr/src/app/sqlite_data
+    networks:
+      - poker-network
+    container_name: poker-api-prod
+    restart: unless-stopped
+    profiles: ['prod']
+
+volumes:
+  sqlite_data:
+  # Pour persister les données SQLite

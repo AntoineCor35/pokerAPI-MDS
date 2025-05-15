@@ -1,0 +1,41 @@
+# Node modules et fichiers de logs
+node_modules
+npm-debug.log
+
+# Fichiers git et github
+.git
+.github
+.gitignore
+
+# Fichiers d'environnement
+.env
+.env.*
+
+# Fichiers de build
+dist
+build
+
+# Fichiers d'IDE et de configuration
+.vscode
+.idea
+*.swp
+*.swo
+
+# Fichiers de test
+test
+coverage
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichier SQLite (sera monté via un volume)
+db.sqlite
+
+# Fichiers Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Fichiers d'historique
+.history 

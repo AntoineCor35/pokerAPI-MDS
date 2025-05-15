@@ -1,0 +1,59 @@
+version: '3.8'
+
+# Définition d'un réseau pour la communication entre services
+networks:
+  poker-network:
+    driver: bridge
+
+services:
+  api:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3001:3000' # Exposé sur le port 3001 pour éviter les conflits
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      - CORS_ORIGIN=http://localhost:3000 # URL du frontend
+    networks:
+      - poker-network
+    container_name: poker-api-dev
+
+  # Pour la production
+  api-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - '3001:3000' # Exposé sur le port 3001 pour éviter les conflits
+    environment:
+      - NODE_ENV=production
+      - CORS_ORIGIN=http://localhost:3000 # URL du frontend en production
+    volumes:
+      - sqlite_data:/usr/src/app/sqlite_data
+    networks:
+      - poker-network
+    container_name: poker-api-prod
+
+  # Exemple de configuration pour un frontend (commentée)
+  # frontend:
+  #   image: node:20-alpine
+  #   volumes:
+  #     - ./frontend:/app  # Remplacer par le chemin vers votre code frontend
+  #   working_dir: /app
+  #   command: npm run dev  # Commande pour démarrer votre frontend
+  #   ports:
+  #     - "3000:3000"  # Port exposé pour le frontend
+  #   networks:
+  #     - poker-network
+  #   container_name: poker-frontend
+  #   depends_on:
+  #     - api  # Dépend de l'API
+
+volumes:
+  sqlite_data:
+  # Pour persister les données SQLite

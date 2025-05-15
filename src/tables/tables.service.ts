@@ -151,7 +151,10 @@ export class TablesService {
         if (!table) {
             return {
                 success: false,
-                error: 'Table not found'
+                error: 'Table not found',
+                table: undefined,
+                currentPlayer: undefined,
+                possibleActions: undefined
             };
         }
         
@@ -159,7 +162,10 @@ export class TablesService {
         if (!playerExists) {
             return {
                 success: false,
-                error: 'Player must join the table before starting the game'
+                error: 'Player must join the table before starting the game',
+                table,
+                currentPlayer: undefined,
+                possibleActions: undefined
             };
         }
         
@@ -169,9 +175,13 @@ export class TablesService {
         }
         
         if (table.status === 'Ongoing') {
+            const gameState = this.gameLogicService.evaluateGameState(table);
             return {
                 success: false,
-                error: 'Game is already in progress'
+                error: 'Game is already in progress',
+                table,
+                currentPlayer: gameState.currentPlayer,
+                possibleActions: gameState.possibleActions
             };
         }
         
@@ -181,7 +191,7 @@ export class TablesService {
         
         return {
             success: true,
-            // table: gameState.table,
+            table,
             currentPlayer: gameState.currentPlayer,
             possibleActions: gameState.possibleActions
         };
@@ -224,18 +234,22 @@ export class TablesService {
         if (!table) {
             return {
                 success: false,
-                error: 'Table not found'
+                error: 'Table not found',
+                table: undefined,
+                currentPlayer: undefined,
+                possibleActions: undefined
             };
         }
 
         const player = table.players.find((player: any) => player.id === user.id);
         
         if (!player) {
-            console.log("user dans performAction", );
             return {
-                
                 success: false,
-                error: 'Player not found'
+                error: 'Player not found',
+                table,
+                currentPlayer: undefined,
+                possibleActions: undefined
             };
         }
         
@@ -246,12 +260,53 @@ export class TablesService {
         if (gameState && gameState.error) {
             return {
                 success: false,
-                error: gameState.error
+                error: gameState.error,
+                table,
+                currentPlayer: gameState.currentPlayer,
+                possibleActions: gameState.possibleActions
             };
         }
         return {
             success: true,
-            ...gameState
+            table,
+            currentPlayer: gameState.currentPlayer,
+            possibleActions: gameState.possibleActions
+        };
+    }
+
+    /**
+     * Retourne l'état courant de la table, y compris les actions possibles pour le joueur courant
+     */
+    getTableStatus(id: string, user: User): TableActionResponseDto {
+        const table = this.tables.find((table: any) => table.id === parseInt(id));
+        if (!table) {
+            return {
+                success: false,
+                error: 'Table not found',
+                table: undefined,
+                currentPlayer: undefined,
+                possibleActions: undefined
+            };
+        }
+        const player = table.players.find((player: any) => player.id === user.id);
+        if (!player) {
+            return {
+                success: false,
+                error: 'Player not found at this table',
+                table,
+                currentPlayer: undefined,
+                possibleActions: undefined
+            };
+        }
+        // S'assurer que le bon joueur est currentPlayer
+        table.players.forEach((p: any) => p.isCurrentPlayer = false);
+        player.isCurrentPlayer = true;
+        const gameState = this.gameLogicService.evaluateGameState(table);
+        return {
+            success: true,
+            table,
+            currentPlayer: gameState.currentPlayer,
+            possibleActions: gameState.possibleActions
         };
     }
 
