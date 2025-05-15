@@ -2,10 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { LoggerInterceptorInterceptor } from './logger-interceptor/logger-interceptor.interceptor';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  app.useGlobalPipes(new ValidationPipe());
+
   // Configuration CORS pour permettre les requêtes depuis le frontend
   app.enableCors({
     origin: process.env.CORS_ORIGIN || '*', // En production, spécifiez l'origine exacte
