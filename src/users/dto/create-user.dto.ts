@@ -6,7 +6,7 @@ export class CreateUserDto {
 
     @ApiProperty()
     @IsString({always:true})
-    @Length(2,8)
+    @Length(2,25)
     pseudo: string;
 
     @ApiProperty()
